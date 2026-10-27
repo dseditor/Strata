@@ -22,6 +22,11 @@
 #include <functional>
 #include <map>
 #include <thread>
+#ifdef _WIN32
+// windows headers (via cuda_runtime.h) define IN / OUT as empty macros; this file uses IN as a local name
+#undef IN
+#undef OUT
+#endif
 
 namespace strata::core {
 

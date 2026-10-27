@@ -48,7 +48,17 @@
 #include <thread>
 #include <vector>
 
+#ifdef _WIN32
+#include <io.h>  // read()
+using ssize_t = long long;
+#include <cstdlib>
+inline int setenv(const char* k, const char* v, int overwrite) {
+    if (!overwrite && std::getenv(k)) return 0;
+    return _putenv_s(k, v);
+}
+#else
 #include <unistd.h>
+#endif
 
 namespace {
 
@@ -248,7 +258,9 @@ strata::core::ConversationCache g_cc;   ///< --prompt-cache N / --conversation-c
 int64_t g_every = 16384;                ///< --prompt-cache-every M: a checkpoint every M tokens of a long read (0 = off)
 
 int run_serve(strata::core::NemoModel& m) {
-    std::signal(SIGPIPE, SIG_IGN);
+#ifndef _WIN32
+    std::signal(SIGPIPE, SIG_IGN);  // windows has no SIGPIPE; a closed socket returns an error instead
+#endif
     const int64_t n_vocab = m.geometry().n_vocab;
     const auto st = m.stats();
     std::printf("INFO engine=strata-nemotron-v1 engine_kind=nemotron context=%lld kv=bf16 expert_slots=%lld "
