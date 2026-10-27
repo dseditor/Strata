@@ -142,8 +142,22 @@ def engine(images):
     if total and done != total:
         tmp.unlink(missing_ok=True)
         stop("The engine download was cut off. Run again.")
+    # the release zip is the whole package in one top folder; a git checkout needs only its build folders
     with zipfile.ZipFile(tmp) as z:
-        z.extractall(ROOT)
+        for info in z.infolist():
+            parts = Path(info.filename).parts
+            for i, p in enumerate(parts):
+                if p in ("build", "build-vision"):
+                    rel = Path(*parts[i:])
+                    break
+            else:
+                continue
+            if info.is_dir():
+                continue
+            dest = ROOT / rel
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            with z.open(info) as src, open(dest, "wb") as out:
+                shutil.copyfileobj(src, out)
     tmp.unlink()
 
 

@@ -15,8 +15,11 @@ branch [`windows-nemotron`](https://github.com/dseditor/Strata/tree/windows-nemo
 
 ## Install and run
 
-**Double-click `START-NEMOTRON.bat`** in this folder (get it with
-`git clone -b windows-nemotron https://github.com/dseditor/Strata strata-nemotron`, or "Download ZIP" of this branch).
+1. Download **`strata-nemotron-windows-x64.zip`** from the
+   [latest release](https://github.com/dseditor/Strata/releases/latest) and unzip it (a drive with ~75 GB free).
+2. Double-click **`START-NEMOTRON.bat`** in the unzipped folder.
+
+(From a git clone of branch `windows-nemotron` it works the same: the installer downloads the engine part of the zip.)
 
 The first run:
 1. checks the PC (RTX 50-series, driver 580+, RAM, free disk) and stops before downloading anything if it does not fit;

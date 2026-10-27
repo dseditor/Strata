@@ -1,4 +1,4 @@
-> **Windows (this branch, `windows-nemotron`)**: double-click **`START-NEMOTRON.bat`**. It checks the PC
+> **Windows (this branch, `windows-nemotron`)**: download `strata-nemotron-windows-x64.zip` from the [release](https://github.com/dseditor/Strata/releases/latest), unzip, double-click **`START-NEMOTRON.bat`**. It checks the PC
 > (RTX 50-series, driver 580+, 96 GB RAM), installs Python if needed, downloads the Windows engine and the model, and
 > opens the chat page. Details: [README-WINDOWS.md](README-WINDOWS.md). `START-HERE.bat` is upstream Strata's installer
 > for its Qwen models, not for Nemotron.
