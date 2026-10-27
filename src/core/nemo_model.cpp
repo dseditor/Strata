@@ -398,6 +398,7 @@ struct NemoModel::Impl {
     std::vector<ImgRun> img_runs;
     float* img_host = nullptr;
     size_t img_cap = 0;   ///< floats
+    bool img_pinned = false;   ///< false: a pageable fallback (page-locked RAM ran out, e.g. the Windows pinned limit)
     /// The image rows among T rows that start at absolute position p0, copied over `x` (device, E floats a row).
     void img_overlay(float* x, int64_t p0, int64_t T, int64_t E, cudaStream_t s) {
         for (const ImgRun& r : img_runs) {
@@ -901,7 +902,7 @@ NemoModel::~NemoModel() {
     if (impl_->arena) cudaFreeHost(impl_->arena);
     if (impl_->embd_stage) cudaFreeHost(impl_->embd_stage);
     if (impl_->embd_pinned) cudaFreeHost(impl_->embd_pinned);
-    if (impl_->img_host) cudaFreeHost(impl_->img_host);
+    if (impl_->img_host) { if (impl_->img_pinned) cudaFreeHost(impl_->img_host); else std::free(impl_->img_host); }
     if (impl_->st) cudaStreamDestroy(impl_->st);
 }
 
@@ -920,14 +921,20 @@ bool NemoModel::set_image_rows(const float* rows, const std::vector<std::pair<in
         total += r.second;
     }
     if ((size_t) (total * E) > I.img_cap) {
-        if (I.img_host) cudaFreeHost(I.img_host);
+        if (I.img_host) { if (I.img_pinned) cudaFreeHost(I.img_host); else std::free(I.img_host); }
         I.img_host = nullptr;
         I.img_cap = 0;
-        if (cudaMallocHost((void**) &I.img_host, (size_t) total * E * sizeof(float)) != cudaSuccess) {
+        I.img_pinned = cudaMallocHost((void**) &I.img_host, (size_t) total * E * sizeof(float)) == cudaSuccess;
+        if (!I.img_pinned) {
+            // page-locked RAM is used up by the experts (Windows caps it well below the RAM size): the image rows are
+            // a few MB, so pageable memory is fine - the copy to the GPU is synchronous instead of async
             cudaGetLastError();
-            I.img_runs.clear();
-            err = "no page-locked memory for the image rows";
-            return false;
+            I.img_host = (float*) std::malloc((size_t) total * E * sizeof(float));
+            if (!I.img_host) {
+                I.img_runs.clear();
+                err = "no memory for the image rows";
+                return false;
+            }
         }
         I.img_cap = (size_t) (total * E);
     }
