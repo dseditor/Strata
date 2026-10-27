@@ -1,3 +1,8 @@
+> **Windows (this branch, `windows-nemotron`)**: double-click **`START-NEMOTRON.bat`**. It checks the PC
+> (RTX 50-series, driver 580+, 96 GB RAM), installs Python if needed, downloads the Windows engine and the model, and
+> opens the chat page. Details: [README-WINDOWS.md](README-WINDOWS.md). `START-HERE.bat` is upstream Strata's installer
+> for its Qwen models, not for Nemotron.
+>
 > **This is strata-nemotron**, a fork of Strata that adds **NVIDIA Nemotron 3.5 Super (120B-A12B)** on one RTX 5090:
 > prefill 9.5K tok/s at 32K, decode 95–109 tok/s and 118–186 with MTP, context up to 1M. Start at
 > [docs/nemotron/README.md](docs/nemotron/README.md); weights:
